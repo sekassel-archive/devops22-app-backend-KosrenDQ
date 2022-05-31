@@ -67,7 +67,7 @@ jobs:
           new-image-tag: ${{ steps.package-version.outputs.current-version }}
           container-name: app-backend
       - name: Update Kubernetes manifest for staging environment
-        id: update-image-test
+        id: update-image-staging
         uses: Charlyzzz/update-k8s-image@v1.7.1
         with: 
           manifest-path: .argo/staging/deployment.yaml
@@ -105,14 +105,14 @@ jobs:
           new-image-tag: ${{ steps.package-version.outputs.current-version }}
           container-name: app-backend
       - name: Update Kubernetes manifest for staging environment
-        id: update-image-test
+        id: update-image-staging
         uses: Charlyzzz/update-k8s-image@v1.7.1
         with: 
           manifest-path: .argo/staging/deployment.yaml
           new-image-tag: ${{ steps.package-version.outputs.current-version }}
           container-name: app-backend
       - name: Update Kubernetes manifest for production environment
-        id: update-image-test
+        id: update-image-production
         uses: Charlyzzz/update-k8s-image@v1.7.1
         with: 
           manifest-path: .argo/production/deployment.yaml
