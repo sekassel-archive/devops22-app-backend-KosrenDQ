@@ -35,8 +35,14 @@ jobs:
     if: github.ref_name == 'master'
     steps:
       - uses: actions/checkout@v3
+      - name: Get version
+        id: package-version
+        run: |
+          echo "Reading version from ./package.json"
+          PACKAGE_VERSION=$(cat ./package.json | jq '.version' | tr -d '"')
+          echo ::set-output name=current-version::$PACKAGE_VERSION
       - name: Build and publish on registry
         run: |
           docker login ${{ secrets.DOCKER_URL }} -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -t ${{ secrets.DOCKER_URL }}/app-backend:latest .
-          docker push ${{ secrets.DOCKER_URL }}/app-backend:latest
+          docker build -t ${{ secrets.DOCKER_URL }}/app-backend:${{ steps.package-version.outputs.current-version }} .
+          docker push ${{ secrets.DOCKER_URL }}/app-backend:${{ steps.package-version.outputs.current-version }}
