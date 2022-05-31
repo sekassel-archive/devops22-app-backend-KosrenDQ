@@ -5,26 +5,26 @@ metadata:
     workload.user.cattle.io/workloadselector: apps.deployment-testing-app-backend
   name: app-backend
   namespace: testing
-  spec:
-    replicas: 1
-    revisionHistoryLimit: 1
-    selector: 
-      matchLabels:
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector: 
+    matchLabels:
+      workload.user.cattle.io/workloadselector: apps.deployment-testing-app-backend
+  template:
+    metadata:
+      labels:
         workload.user.cattle.io/workloadselector: apps.deployment-testing-app-backend
-    template:
-      metadata:
-        labels:
-          workload.user.cattle.io/workloadselector: apps.deployment-testing-app-backend
-      spec:
-        container:
-          - image: registry.sec.devops.uniks.de/app-backend:0.0.1
-            name: app-backend
-            envFrom: 
-              - secretRef:
-                  name: mongo-secret
-                  optional: false
-              - secretRef:
-                  name: keycloak-secret
-                  optional: false
-        imagePullSecret:
-          - name: registry
+    spec:
+      containers:
+        - image: registry.sec.devops.uniks.de/app-backend:0.0.1
+          name: app-backend
+          envFrom: 
+            - secretRef:
+                name: mongo-secret
+                optional: false
+            - secretRef:
+                name: keycloak-secret
+                optional: false
+      imagePullSecret:
+        - name: registry
