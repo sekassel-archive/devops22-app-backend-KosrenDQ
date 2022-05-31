@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    workload.user.cattle.io/workloadselector: apps.deployment-staging-app-backend
+  name: app-backend
+  namespace: staging
+  spec:
+    replicas: 1
+    revisionHistoryLimit: 1
+    selector: 
+      matchLabels:
+        workload.user.cattle.io/workloadselector: apps.deployment-staging-app-backend
+    template:
+      metadata:
+        labels:
+          workload.user.cattle.io/workloadselector: apps.deployment-staging-app-backend
+      spec:
+        container:
+          - image: registry.sec.devops.uniks.de/app-backend:0.0.1
+            name: app-backend
+            envFrom: 
+              - secretRef:
+                  name: mongo-secret
+                  optional: false
+              - secretRef:
+                  name: keycloak-secret
+                  optional: false
+        imagePullSecret:
+          - name: registry

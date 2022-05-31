@@ -32,7 +32,6 @@ jobs:
   publish:
     runs-on: [self-hosted, default]
     needs: test
-    if: github.ref_name == 'master'
     steps:
       - uses: actions/checkout@v3
       - name: Get version
@@ -46,3 +45,86 @@ jobs:
           docker login ${{ secrets.DOCKER_URL }} -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -t ${{ secrets.DOCKER_URL }}/app-backend:${{ steps.package-version.outputs.current-version }} .
           docker push ${{ secrets.DOCKER_URL }}/app-backend:${{ steps.package-version.outputs.current-version }}
+
+  post-publish-dev:
+    runs-on: [self-hosted, default]
+    needs: publish
+    if: github.ref_name == 'dev'
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get version
+        id: package-version
+        run: |
+          echo "Reading version from ./package.json"
+          PACKAGE_VERSION=$(cat ./package.json | jq '.version' | tr -d '"')
+          echo ::set-output name=current-version::$PACKAGE_VERSION
+      - name: Update Kubernetes manifest for testing environment
+        id: update-image-test
+        uses: Charlyzzz/update-k8s-image@v1.7.1
+        with: 
+          manifest-path: .argo/testing/deployment.yaml
+          new-image-tag: ${{ steps.package-version.outputs.current-version }}
+          container-name: app-backend
+      - name: Update Kubernetes manifest for staging environment
+        id: update-image-test
+        uses: Charlyzzz/update-k8s-image@v1.7.1
+        with: 
+          manifest-path: .argo/staging/deployment.yaml
+          new-image-tag: ${{ steps.package-version.outputs.current-version }}
+          container-name: app-backend
+      - name: Commit changes
+        run: |
+          git config --local user.email "13371337+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -m "Update Kubernetes manifest testing/staging" -a
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+  post-publish-master:
+    runs-on: [self-hosted, default]
+    needs: publish
+    if: github.ref_name == 'master'
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get version
+        id: package-version
+        run: |
+          echo "Reading version from ./package.json"
+          PACKAGE_VERSION=$(cat ./package.json | jq '.version' | tr -d '"')
+          echo ::set-output name=current-version::$PACKAGE_VERSION
+      - name: Update Kubernetes manifest for testing environment
+        id: update-image-test
+        uses: Charlyzzz/update-k8s-image@v1.7.1
+        with: 
+          manifest-path: .argo/testing/deployment.yaml
+          new-image-tag: ${{ steps.package-version.outputs.current-version }}
+          container-name: app-backend
+      - name: Update Kubernetes manifest for staging environment
+        id: update-image-test
+        uses: Charlyzzz/update-k8s-image@v1.7.1
+        with: 
+          manifest-path: .argo/staging/deployment.yaml
+          new-image-tag: ${{ steps.package-version.outputs.current-version }}
+          container-name: app-backend
+      - name: Update Kubernetes manifest for production environment
+        id: update-image-test
+        uses: Charlyzzz/update-k8s-image@v1.7.1
+        with: 
+          manifest-path: .argo/production/deployment.yaml
+          new-image-tag: ${{ steps.package-version.outputs.current-version }}
+          container-name: app-backend
+      - name: Commit changes
+        run: |
+          git config --local user.email "13371337+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -m "Update Kubernetes manifest testing/staging/production" -a
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
