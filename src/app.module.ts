@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { AppControllerV1 } from './app.controller.v1';
-import { AppService } from './app.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Connection } from 'mongoose';
+import { KeycloakConnectModule } from 'nest-keycloak-connect';
 import { validationSchema } from './config';
+import { TravelModule } from './travel';
+import * as toJson from '@meanie/mongoose-to-json';
 
 @Module({
   imports: [
@@ -14,8 +17,25 @@ import { validationSchema } from './config';
         abortEarly: true,
       },
     }),
+    KeycloakConnectModule.registerAsync({
+      useFactory: async (configService: ConfigService) => ({
+        authServerUrl: configService.get<string>('KEYCLOAK_URI'),
+        realm: configService.get<string>('KEYCLOAK_REALM'),
+        clientId: configService.get<string>('KEYCLOAK_CLIENT_ID'),
+        secret: configService.get<string>('KEYCLOAK_SECRET'),
+      }),
+      inject: [ConfigService],
+    }),
+    MongooseModule.forRootAsync({
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGO_URI'),
+        connectionFactory: (connection: Connection) => {
+          return connection.plugin(toJson);
+        },
+      }),
+      inject: [ConfigService],
+    }),
+    TravelModule,
   ],
-  controllers: [AppControllerV1],
-  providers: [AppService],
 })
 export class AppModule {}
