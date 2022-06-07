@@ -26,5 +26,5 @@ spec:
             - secretRef:
                 name: keycloak-secret
                 optional: false
-      imagePullSecret:
+      imagePullSecrets:
         - name: registry
