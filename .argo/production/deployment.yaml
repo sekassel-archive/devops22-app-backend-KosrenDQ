@@ -17,7 +17,7 @@ spec:
         workload.user.cattle.io/workloadselector: apps.deployment-production-app-backend
     spec:
       containers:
-        - image: registry.sec.devops.uniks.de/app-backend:0.0.1
+        - image: registry.sec.devops.uniks.de/app-backend:0.1.5
           name: app-backend
           envFrom:
             - secretRef:
