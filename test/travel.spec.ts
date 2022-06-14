@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server-global';
 import { ConfigModule } from '@nestjs/config';
 import { validationSchema } from '../src/config';
@@ -37,6 +37,9 @@ describe('Travel module', () => {
       ],
     }).compile();
     app = module.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({ transform: true, whitelist: true }),
+    );
     await app.init();
   });
 
