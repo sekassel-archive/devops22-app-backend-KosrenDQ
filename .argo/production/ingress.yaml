@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: new-asgard-letsencrypt-prod
+  name: backend-ingress
+  namespace: production
+spec:
+  rules:
+  - host: app.sec.devops.uniks.de
+    http:
+      paths:
+      - pathType: ImplementationSpecific
+        path: "/api/v1"
+        backend:
+          service:
+            name: app-backend
+            port: 
+              number: 3000
+  tls:
+  - hosts:
+    - app.sec.devops.uniks.de
+    secretName: backend-secret
