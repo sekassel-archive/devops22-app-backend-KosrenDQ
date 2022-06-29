@@ -9,6 +9,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableVersioning({ type: VersioningType.URI });
   app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
+  app.enableCors();
 
   const port = app.get(ConfigService).get<number>('PORT');
 

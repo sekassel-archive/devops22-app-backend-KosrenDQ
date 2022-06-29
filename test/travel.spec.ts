@@ -6,6 +6,8 @@ import { validationSchema } from '../src/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TravelModule } from '../src/travel';
 import * as request from 'supertest';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuardMock } from './AuthGuard.mock';
 
 const asgacolypse = {
   name: 'Asgacolypse',
@@ -34,6 +36,12 @@ describe('Travel module', () => {
         }),
         MongooseModule.forRoot(mongoUri),
         TravelModule,
+      ],
+      providers: [
+        {
+          provide: APP_GUARD,
+          useClass: AuthGuardMock,
+        },
       ],
     }).compile();
     app = module.createNestApplication();

@@ -14,12 +14,18 @@ export class TravelService {
     this.logger.log('TravelService initialized');
   }
 
-  async create(createTravelDto: CreateTravelDto): Promise<Travel> {
-    return this.travelModel.create(createTravelDto);
+  async create(createTravelDto: CreateTravelDto, user: any): Promise<Travel> {
+    return this.travelModel.create({ ...createTravelDto, createdBy: user.sub });
   }
 
-  async findAll(): Promise<Travel[]> {
-    return this.travelModel.find().exec();
+  async findAll(user: any): Promise<Travel[]> {
+    if (user.realm_access.roles.includes('admin')) {
+      return this.travelModel.find().exec();
+    } else if (user.realm_access.roles.includes('user')) {
+      return this.travelModel.find({ createdBy: user.sub });
+    } else {
+      return [];
+    }
   }
 
   async findOne(id: string): Promise<Travel> {

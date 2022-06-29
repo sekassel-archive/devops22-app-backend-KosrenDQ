@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { AuthenticatedUser, Roles } from 'nest-keycloak-connect';
 import { CreateTravelDto, FindTravelParams, UpdateTravelDto } from './dto';
 import { Travel } from './travel.schema';
 import { TravelService } from './travel.service';
@@ -19,23 +20,28 @@ export class TravelControllerV1 {
   constructor(private travelService: TravelService) {}
 
   @Post()
+  @Roles({ roles: ['realm:admin', 'realm:user'] })
   async createTravel(
+    @AuthenticatedUser() user: any,
     @Body() createTravelDto: CreateTravelDto,
   ): Promise<Travel> {
-    return this.travelService.create(createTravelDto);
+    return this.travelService.create(createTravelDto, user);
   }
 
   @Get()
-  async getTravels(): Promise<Travel[]> {
-    return this.travelService.findAll();
+  @Roles({ roles: ['realm:admin', 'realm:user'] })
+  async getTravels(@AuthenticatedUser() user: any): Promise<Travel[]> {
+    return this.travelService.findAll(user);
   }
 
   @Get(':id')
+  @Roles({ roles: ['realm:admin', 'realm:user'] })
   async getTravel(@Param() params: FindTravelParams): Promise<Travel> {
     return this.travelService.findOne(params.id);
   }
 
   @Patch(':id')
+  @Roles({ roles: ['realm:admin', 'realm:user'] })
   async updateTravel(
     @Param() params: FindTravelParams,
     @Body() updateTravelDto: UpdateTravelDto,
@@ -44,6 +50,7 @@ export class TravelControllerV1 {
   }
 
   @Delete(':id')
+  @Roles({ roles: ['realm:admin', 'realm:user'] })
   async deleteTravel(@Param() params: FindTravelParams): Promise<Travel> {
     return this.travelService.deleteOne(params.id);
   }
